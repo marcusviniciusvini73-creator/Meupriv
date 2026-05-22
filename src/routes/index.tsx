@@ -339,16 +339,77 @@ const PLANS = [
 export function PlansGrid({ compact = false }: { compact?: boolean }) {
   const { active: offerActive } = useOfferCountdown();
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
+  // Guarda os loops activos por card — nunca os mata enquanto o card está em hover
+  const loopTweens = useRef<(gsap.core.Tween[] | null)[]>([null, null, null]);
+  const hoveredIdx = useRef<number | null>(null);
 
-  const handleEnter = (hoveredIdx: number) => {
+  const startLoops = (card: HTMLElement, i: number) => {
+    // Para loops anteriores deste card sem afectar outros
+    loopTweens.current[i]?.forEach(t => t.kill());
+
+    const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
+    const glowA = PLANS[i].featured
+      ? "0 28px 90px -10px oklch(0.45 0.22 350 / 0.85), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.7)"
+      : (PLANS[i] as any).exclusive
+      ? "0 28px 90px -10px oklch(0.55 0.18 30 / 0.85), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.7)"
+      : "0 24px 70px -10px oklch(0.45 0.22 350 / 0.6), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.5)";
+    const glowB = PLANS[i].featured
+      ? "0 40px 110px -10px oklch(0.45 0.22 350 / 0.4), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.3)"
+      : (PLANS[i] as any).exclusive
+      ? "0 40px 110px -10px oklch(0.55 0.18 30 / 0.4), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.3)"
+      : "0 40px 110px -10px oklch(0.45 0.22 350 / 0.25), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.2)";
+
+    // Glow pulsa suave em loop — nunca para
+    const glowLoop = gsap.fromTo(card,
+      { boxShadow: glowA },
+      { boxShadow: glowB, duration: 1.6, ease: "sine.inOut", repeat: -1, yoyo: true }
+    );
+
+    // Escala respira levemente — nunca para
+    const scaleLoop = gsap.to(card, {
+      scale: 1.065,
+      duration: 1.8,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true,
+    });
+
+    // Shimmer passa da esquerda para direita infinitamente, suave
+    const shimmerLoop = shimmer ? gsap.fromTo(shimmer,
+      { x: "-130%", opacity: 0 },
+      {
+        x: "130%",
+        opacity: 0,
+        duration: 0,
+        ease: "none",
+        repeat: -1,
+        repeatDelay: 2.0,
+        onRepeat: () => { gsap.set(shimmer, { x: "-130%", opacity: 0 }); },
+        keyframes: [
+          { x: "-130%", opacity: 0,    duration: 0 },
+          { x: "-30%",  opacity: 0.5,  duration: 0.6 },
+          { x: "30%",   opacity: 0.5,  duration: 0.6 },
+          { x: "130%",  opacity: 0,    duration: 0.6 },
+        ],
+      }
+    ) : null;
+
+    loopTweens.current[i] = [glowLoop, scaleLoop, ...(shimmerLoop ? [shimmerLoop] : [])];
+  };
+
+  const stopLoops = (i: number) => {
+    loopTweens.current[i]?.forEach(t => t.kill());
+    loopTweens.current[i] = null;
+  };
+
+  const handleEnter = (idx: number) => {
+    hoveredIdx.current = idx;
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
-      gsap.killTweensOf(card);
       const cta = card.querySelector("[data-cta]") as HTMLElement;
-      if (cta) gsap.killTweensOf(cta);
 
-      if (i === hoveredIdx) {
-        // Primeiro levanta o card
+      if (i === idx) {
+        // Levanta o card — loops começam logo, não esperam o onComplete
         gsap.to(card, {
           scale: 1.06,
           y: -14,
@@ -358,62 +419,13 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
           ease: "power2.out",
           zIndex: 10,
           overwrite: "auto",
-          onComplete: () => {
-            // Depois do card subir, glow pulsa suavemente em loop contínuo
-            const glowA = PLANS[i].featured
-              ? "0 28px 80px -10px oklch(0.45 0.22 350 / 0.8), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.7)"
-              : (PLANS[i] as any).exclusive
-              ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.8), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.7)"
-              : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.55), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.5)";
-            const glowB = PLANS[i].featured
-              ? "0 36px 100px -10px oklch(0.45 0.22 350 / 0.45), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.35)"
-              : (PLANS[i] as any).exclusive
-              ? "0 36px 100px -10px oklch(0.55 0.18 30 / 0.45), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.35)"
-              : "0 36px 100px -10px oklch(0.45 0.22 350 / 0.3), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.25)";
-            gsap.to(card, {
-              boxShadow: glowA,
-              duration: 1.4,
-              ease: "sine.inOut",
-              repeat: -1,
-              yoyo: true,
-              overwrite: false,
-            });
-            // Escala pulsa levemente também
-            gsap.to(card, {
-              scale: 1.065,
-              duration: 1.6,
-              ease: "sine.inOut",
-              repeat: -1,
-              yoyo: true,
-              overwrite: false,
-            });
-          },
         });
-        const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
-        if (shimmer) {
-          gsap.killTweensOf(shimmer);
-          // Loop contínuo sem voltar ao início — repeat com yoyo suave
-          gsap.fromTo(shimmer,
-            { x: "-110%", opacity: 0 },
-            {
-              x: "110%",
-              opacity: 0,
-              duration: 2.2,
-              ease: "sine.inOut",
-              repeat: -1,
-              repeatDelay: 1.2,
-              keyframes: [
-                { x: "-110%", opacity: 0, duration: 0 },
-                { x: "0%",    opacity: 0.55, duration: 1.1 },
-                { x: "110%",  opacity: 0,    duration: 1.1 },
-              ],
-            }
-          );
-        }
-        if (cta) {
-          gsap.to(cta, { scale: 1.04, duration: 0.7, ease: "power2.out", overwrite: "auto" });
-        }
+        if (cta) gsap.to(cta, { scale: 1.04, duration: 0.7, ease: "power2.out", overwrite: "auto" });
+        // Inicia loops imediatamente — contínuos e sem reset
+        startLoops(card, i);
       } else {
+        // Para os loops dos outros cards
+        stopLoops(i);
         gsap.to(card, {
           scale: 0.94,
           y: 6,
@@ -425,20 +437,18 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
           zIndex: 1,
           overwrite: "auto",
         });
-        if (cta) {
-          gsap.to(cta, { scale: 1, duration: 0.7, ease: "power2.out", overwrite: "auto" });
-        }
+        if (cta) gsap.to(cta, { scale: 1, duration: 0.7, ease: "power2.out", overwrite: "auto" });
       }
     });
   };
 
   const handleLeave = () => {
-    cardRefs.current.forEach((card) => {
+    hoveredIdx.current = null;
+    cardRefs.current.forEach((card, i) => {
       if (!card) return;
-      gsap.killTweensOf(card);
+      // Para todos os loops
+      stopLoops(i);
       const cta = card.querySelector("[data-cta]") as HTMLElement;
-      if (cta) gsap.killTweensOf(cta);
-
       gsap.to(card, {
         scale: 1,
         y: 0,
