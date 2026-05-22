@@ -348,27 +348,66 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
       if (cta) gsap.killTweensOf(cta);
 
       if (i === hoveredIdx) {
+        // Primeiro levanta o card
         gsap.to(card, {
           scale: 1.06,
           y: -14,
           opacity: 1,
           filter: "brightness(1.15) saturate(1.1)",
-          boxShadow: PLANS[i].featured
-            ? "0 28px 80px -10px oklch(0.45 0.22 350 / 0.75), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.65)"
-            : (PLANS[i] as any).exclusive
-            ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.75), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.65)"
-            : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.5), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.45)",
           duration: 0.7,
           ease: "power2.out",
           zIndex: 10,
           overwrite: "auto",
+          onComplete: () => {
+            // Depois do card subir, glow pulsa suavemente em loop contínuo
+            const glowA = PLANS[i].featured
+              ? "0 28px 80px -10px oklch(0.45 0.22 350 / 0.8), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.7)"
+              : (PLANS[i] as any).exclusive
+              ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.8), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.7)"
+              : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.55), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.5)";
+            const glowB = PLANS[i].featured
+              ? "0 36px 100px -10px oklch(0.45 0.22 350 / 0.45), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.35)"
+              : (PLANS[i] as any).exclusive
+              ? "0 36px 100px -10px oklch(0.55 0.18 30 / 0.45), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.35)"
+              : "0 36px 100px -10px oklch(0.45 0.22 350 / 0.3), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.25)";
+            gsap.to(card, {
+              boxShadow: glowA,
+              duration: 1.4,
+              ease: "sine.inOut",
+              repeat: -1,
+              yoyo: true,
+              overwrite: false,
+            });
+            // Escala pulsa levemente também
+            gsap.to(card, {
+              scale: 1.065,
+              duration: 1.6,
+              ease: "sine.inOut",
+              repeat: -1,
+              yoyo: true,
+              overwrite: false,
+            });
+          },
         });
         const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
         if (shimmer) {
           gsap.killTweensOf(shimmer);
+          // Loop contínuo sem voltar ao início — repeat com yoyo suave
           gsap.fromTo(shimmer,
-            { x: "-110%", opacity: 0.6 },
-            { x: "110%", opacity: 0, duration: 1.0, ease: "sine.inOut" }
+            { x: "-110%", opacity: 0 },
+            {
+              x: "110%",
+              opacity: 0,
+              duration: 2.2,
+              ease: "sine.inOut",
+              repeat: -1,
+              repeatDelay: 1.2,
+              keyframes: [
+                { x: "-110%", opacity: 0, duration: 0 },
+                { x: "0%",    opacity: 0.55, duration: 1.1 },
+                { x: "110%",  opacity: 0,    duration: 1.1 },
+              ],
+            }
           );
         }
         if (cta) {
