@@ -345,39 +345,39 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
       if (!card) return;
       if (i === hoveredIdx) {
         gsap.to(card, {
-          scale: 1.07,
-          y: -16,
+          scale: 1.06,
+          y: -14,
           opacity: 1,
-          filter: "brightness(1.18) saturate(1.1)",
+          filter: "brightness(1.15) saturate(1.1)",
           boxShadow: PLANS[i].featured
             ? "0 28px 80px -10px oklch(0.45 0.22 350 / 0.75), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.65)"
-            : PLANS[i].exclusive
+            : (PLANS[i] as any).exclusive
             ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.75), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.65)"
             : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.5), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.45)",
-          duration: 0.4,
-          ease: "power3.out",
+          duration: 0.65,
+          ease: "power2.out",
           zIndex: 10,
         });
         const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
         if (shimmer) {
           gsap.fromTo(shimmer,
             { x: "-110%", opacity: 0.8 },
-            { x: "110%", opacity: 0, duration: 0.6, ease: "power1.inOut" }
+            { x: "110%", opacity: 0, duration: 0.9, ease: "power1.inOut" }
           );
         }
         const cta = card.querySelector("[data-cta]") as HTMLElement;
         if (cta) {
-          gsap.to(cta, { scale: 1.06, duration: 0.35, ease: "back.out(1.8)" });
+          gsap.to(cta, { scale: 1.05, duration: 0.55, ease: "back.out(1.4)" });
         }
       } else {
         gsap.to(card, {
-          scale: 0.93,
-          y: 8,
-          opacity: 0.45,
-          filter: "brightness(0.65) saturate(0.7)",
+          scale: 0.94,
+          y: 6,
+          opacity: 0.5,
+          filter: "brightness(0.7) saturate(0.75)",
           boxShadow: "none",
-          duration: 0.4,
-          ease: "power3.out",
+          duration: 0.65,
+          ease: "power2.out",
           zIndex: 1,
         });
       }
@@ -393,12 +393,12 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
         opacity: 1,
         filter: "brightness(1) saturate(1)",
         boxShadow: "none",
-        duration: 0.45,
-        ease: "power3.out",
+        duration: 0.9,
+        ease: "power1.inOut",
         zIndex: 1,
       });
       const cta = card.querySelector("[data-cta]") as HTMLElement;
-      if (cta) gsap.to(cta, { scale: 1, duration: 0.3, ease: "power2.out" });
+      if (cta) gsap.to(cta, { scale: 1, duration: 0.7, ease: "power1.out" });
     });
   };
 
