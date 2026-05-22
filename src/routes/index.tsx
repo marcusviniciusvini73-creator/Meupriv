@@ -354,20 +354,20 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
             : (PLANS[i] as any).exclusive
             ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.75), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.65)"
             : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.5), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.45)",
-          duration: 0.65,
-          ease: "power2.out",
+          duration: 0.8,
+          ease: "sine.out",
           zIndex: 10,
         });
         const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
         if (shimmer) {
           gsap.fromTo(shimmer,
-            { x: "-110%", opacity: 0.8 },
-            { x: "110%", opacity: 0, duration: 0.9, ease: "power1.inOut" }
+            { x: "-110%", opacity: 0.6 },
+            { x: "110%", opacity: 0, duration: 1.1, ease: "sine.inOut" }
           );
         }
         const cta = card.querySelector("[data-cta]") as HTMLElement;
         if (cta) {
-          gsap.to(cta, { scale: 1.05, duration: 0.55, ease: "back.out(1.4)" });
+          gsap.to(cta, { scale: 1.04, duration: 0.8, ease: "sine.out" });
         }
       } else {
         gsap.to(card, {
@@ -376,8 +376,8 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
           opacity: 0.5,
           filter: "brightness(0.7) saturate(0.75)",
           boxShadow: "none",
-          duration: 0.65,
-          ease: "power2.out",
+          duration: 0.8,
+          ease: "sine.out",
           zIndex: 1,
         });
       }
@@ -393,12 +393,12 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
         opacity: 1,
         filter: "brightness(1) saturate(1)",
         boxShadow: "none",
-        duration: 0.9,
-        ease: "power1.inOut",
+        duration: 1.6,
+        ease: "elastic.out(1, 0.4)",
         zIndex: 1,
       });
       const cta = card.querySelector("[data-cta]") as HTMLElement;
-      if (cta) gsap.to(cta, { scale: 1, duration: 0.7, ease: "power1.out" });
+      if (cta) gsap.to(cta, { scale: 1, duration: 1.4, ease: "elastic.out(1, 0.4)" });
     });
   };
 
@@ -447,12 +447,12 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
             />
 
             {p.featured && (
-              <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-gradient-to-r from-wine to-magenta px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-white z-10">
+              <span className="inline-flex items-center self-start rounded-full bg-gradient-to-r from-wine to-magenta px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-white mb-2">
                 {p.tag}
               </span>
             )}
             {(p as any).exclusive && (
-              <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-gradient-to-r from-amber-700 to-amber-500 px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-white z-10">
+              <span className="inline-flex items-center self-start rounded-full bg-gradient-to-r from-amber-700 to-amber-500 px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-white mb-2">
                 {p.tag}
               </span>
             )}
