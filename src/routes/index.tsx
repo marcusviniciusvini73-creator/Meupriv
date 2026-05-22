@@ -343,6 +343,10 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
   const handleEnter = (hoveredIdx: number) => {
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
+      gsap.killTweensOf(card);
+      const cta = card.querySelector("[data-cta]") as HTMLElement;
+      if (cta) gsap.killTweensOf(cta);
+
       if (i === hoveredIdx) {
         gsap.to(card, {
           scale: 1.06,
@@ -354,20 +358,21 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
             : (PLANS[i] as any).exclusive
             ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.75), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.65)"
             : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.5), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.45)",
-          duration: 0.8,
-          ease: "sine.out",
+          duration: 0.7,
+          ease: "power2.out",
           zIndex: 10,
+          overwrite: "auto",
         });
         const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
         if (shimmer) {
+          gsap.killTweensOf(shimmer);
           gsap.fromTo(shimmer,
             { x: "-110%", opacity: 0.6 },
-            { x: "110%", opacity: 0, duration: 1.1, ease: "sine.inOut" }
+            { x: "110%", opacity: 0, duration: 1.0, ease: "sine.inOut" }
           );
         }
-        const cta = card.querySelector("[data-cta]") as HTMLElement;
         if (cta) {
-          gsap.to(cta, { scale: 1.04, duration: 0.8, ease: "sine.out" });
+          gsap.to(cta, { scale: 1.04, duration: 0.7, ease: "power2.out", overwrite: "auto" });
         }
       } else {
         gsap.to(card, {
@@ -376,10 +381,14 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
           opacity: 0.5,
           filter: "brightness(0.7) saturate(0.75)",
           boxShadow: "none",
-          duration: 0.8,
-          ease: "sine.out",
+          duration: 0.7,
+          ease: "power2.out",
           zIndex: 1,
+          overwrite: "auto",
         });
+        if (cta) {
+          gsap.to(cta, { scale: 1, duration: 0.7, ease: "power2.out", overwrite: "auto" });
+        }
       }
     });
   };
@@ -387,18 +396,22 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
   const handleLeave = () => {
     cardRefs.current.forEach((card) => {
       if (!card) return;
+      gsap.killTweensOf(card);
+      const cta = card.querySelector("[data-cta]") as HTMLElement;
+      if (cta) gsap.killTweensOf(cta);
+
       gsap.to(card, {
         scale: 1,
         y: 0,
         opacity: 1,
         filter: "brightness(1) saturate(1)",
         boxShadow: "none",
-        duration: 1.6,
-        ease: "elastic.out(1, 0.4)",
+        duration: 1.5,
+        ease: "power3.out",
         zIndex: 1,
+        overwrite: "auto",
       });
-      const cta = card.querySelector("[data-cta]") as HTMLElement;
-      if (cta) gsap.to(cta, { scale: 1, duration: 1.4, ease: "elastic.out(1, 0.4)" });
+      if (cta) gsap.to(cta, { scale: 1, duration: 1.3, ease: "power3.out", overwrite: "auto" });
     });
   };
 
