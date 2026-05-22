@@ -98,7 +98,7 @@ function DiscountBanner() {
       className="mb-10 flex items-center justify-center gap-3 rounded-2xl border border-magenta/30 bg-magenta/10 px-6 py-4 text-sm flex-wrap"
     >
       <span className="text-magenta font-medium tracking-wide uppercase text-[11px]">
-        🔥 Oferta por tempo limitado
+        🔥 Oferta imperdível por tempo limitado
       </span>
       <span className="text-muted-foreground">—</span>
       <span className="font-display text-foreground text-base">
@@ -266,7 +266,7 @@ function HomePage() {
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">— Planos</p>
               <h2 className="mt-3 font-display text-4xl sm:text-5xl">
-                Dois níveis de{" "}
+                Três níveis de{" "}
                 <em className="text-gradient-wine not-italic">intimidade</em>.
               </h2>
             </div>
@@ -314,6 +314,25 @@ const PLANS = [
     ],
     featured: true,
   },
+  {
+    id: "private",
+    name: "Experiência Privada",
+    tag: "Exclusivo",
+    oldPrice: "149,90",
+    price: "119",
+    cents: "90",
+    desc: "O máximo da intimidade.",
+    features: [
+      "Tudo do VIP",
+      "Acesso a conteúdo nunca publicado",
+      "Vídeos longos e exclusivos",
+      "Chat privado direto",
+      "Pedidos especiais mensais",
+      "Prioridade máxima de suporte",
+    ],
+    featured: false,
+    exclusive: true,
+  },
 ];
 
 // ── PlansGrid ─────────────────────────────────────────────────
@@ -325,7 +344,6 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
       if (i === hoveredIdx) {
-        // Card hovered: cresce, sobe, acende
         gsap.to(card, {
           scale: 1.07,
           y: -16,
@@ -333,12 +351,13 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
           filter: "brightness(1.18) saturate(1.1)",
           boxShadow: PLANS[i].featured
             ? "0 28px 80px -10px oklch(0.45 0.22 350 / 0.75), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.65)"
+            : PLANS[i].exclusive
+            ? "0 28px 80px -10px oklch(0.55 0.18 30 / 0.75), 0 0 0 1.5px oklch(0.55 0.18 30 / 0.65)"
             : "0 24px 65px -10px oklch(0.45 0.22 350 / 0.5), 0 0 0 1.5px oklch(0.45 0.22 350 / 0.45)",
           duration: 0.4,
           ease: "power3.out",
           zIndex: 10,
         });
-        // Shimmer atravessa o card
         const shimmer = card.querySelector("[data-shimmer]") as HTMLElement;
         if (shimmer) {
           gsap.fromTo(shimmer,
@@ -346,13 +365,11 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
             { x: "110%", opacity: 0, duration: 0.6, ease: "power1.inOut" }
           );
         }
-        // Botão pulsa
         const cta = card.querySelector("[data-cta]") as HTMLElement;
         if (cta) {
           gsap.to(cta, { scale: 1.06, duration: 0.35, ease: "back.out(1.8)" });
         }
       } else {
-        // Outros cards: recuam, escurecem, ficam menores
         gsap.to(card, {
           scale: 0.93,
           y: 8,
@@ -389,7 +406,7 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
     <>
       {!compact && <DiscountBanner />}
       <div
-        className="grid gap-6 lg:grid-cols-2 max-w-3xl mx-auto"
+        className="grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto"
         style={{ perspective: "1200px" }}
       >
         {PLANS.map((p, i) => (
@@ -399,7 +416,11 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
             onMouseEnter={() => handleEnter(i)}
             onMouseLeave={handleLeave}
             className={`relative rounded-3xl p-8 flex flex-col overflow-hidden cursor-pointer ${
-              p.featured ? "glass-strong border-magenta/40" : "glass"
+              p.featured
+                ? "glass-strong border-magenta/40"
+                : (p as any).exclusive
+                ? "glass border border-white/10"
+                : "glass"
             }`}
             style={{ transformOrigin: "center center", willChange: "transform, opacity, filter, box-shadow" }}
           >
@@ -419,6 +440,8 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
               style={{
                 background: p.featured
                   ? "linear-gradient(135deg, oklch(0.45 0.22 350 / 0.09) 0%, transparent 55%)"
+                  : (p as any).exclusive
+                  ? "linear-gradient(135deg, oklch(0.55 0.18 30 / 0.12) 0%, transparent 55%)"
                   : "linear-gradient(135deg, oklch(0.32 0.13 12 / 0.07) 0%, transparent 55%)",
               }}
             />
@@ -428,7 +451,12 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
                 {p.tag}
               </span>
             )}
-            {!p.featured && (
+            {(p as any).exclusive && (
+              <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-gradient-to-r from-amber-700 to-amber-500 px-3 py-1 text-[10px] tracking-[0.2em] uppercase text-white z-10">
+                {p.tag}
+              </span>
+            )}
+            {!p.featured && !(p as any).exclusive && (
               <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">{p.tag}</span>
             )}
 
@@ -486,6 +514,8 @@ export function PlansGrid({ compact = false }: { compact?: boolean }) {
               className={`mt-8 inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-medium transition-opacity ${
                 p.featured
                   ? "bg-gradient-to-r from-wine to-magenta text-white"
+                  : (p as any).exclusive
+                  ? "bg-gradient-to-r from-amber-700 to-amber-500 text-white"
                   : "glass text-foreground"
               }`}
               style={{ willChange: "transform" }}
